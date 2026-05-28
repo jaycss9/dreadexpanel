@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRAEDEX</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --card: #161616;
+    --border: #222222;
+    --accent: #ff3c00;
+    --accent2: #ff9500;
+    --text: #e8e8e8;
+    --muted: #555555;
+    --label: #888888;
+    --green: #00e676;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.6rem;
+    letter-spacing: 3px;
+    background: linear-gradient(90deg, #ff3c00, #ff9500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    flex: 1;
+  }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    padding: 28px 32px;
+    overflow-y: auto;
+    max-height: calc(100vh - 90px);
+  }
+
+  .panel-left { border-right: 1px solid var(--border); }
+  .panel-right { background: #0d0d0d; }
+
+  .section {
+    margin-bottom: 22px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    overflow: hidden;
+  }
+
+  .section-header {
+    padding: 12px 16px;
+    background: #1a1a1a;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-header:hover { background: #1e1e1e; }
+
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .toggle-icon {
+    font-size: 0.8rem;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .section.collapsed .toggle-icon { transform: rotate(-90deg); }
+  .section-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .section.collapsed .section-body { display: none; }
+
+  label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--label);
+    margin-bottom: 5px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  input[type="text"], input[type="email"], input[type="url"], textarea, select {
+    width: 100%;
+    background: #0f0f0f;
+    border: 1px solid #2a2a2a;
+    border-radius: 5px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  select option { background: #111; }
+  textarea { min-height: 80px; line-height: 1.5; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  .opt-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .opt-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--label);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .switch {
+    position: relative;
+    width: 38px; height: 20px;
+    flex-shrink: 0;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0;
+    background: #2a2a2a;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    left: 3px; top: 3px;
+    background: #555;
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .switch input:checked + .slider { background: #1f1f1f; border: 1px solid var(--accent); }
+  .switch input:checked + .slider::before { transform: translateX(18px); background: var(--accent); }
+
+  .artist-list { display: flex; flex-direction: column; gap: 8px; }
+  .artist-entry {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+  }
+  .artist-entry input { margin: 0; }
+  .btn-remove {
+    background: none;
+    border: 1px solid #2a2a2a;
+    color: var(--muted);
+    width: 32px; height: 32px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .btn-remove:hover { border-color: var(--accent); color: var(--accent); background: #1a0800; }
+
+  .btn-add {
+    background: none;
+    border: 1px dashed #2a2a2a;
+    color: var(--muted);
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .btn-add:hover { border-color: var(--accent); color: var(--accent); background: #1a0800; }
+
+  .tag-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    padding: 4px 10px;
+    border: 1px solid #2a2a2a;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tag:hover { border-color: var(--accent2); color: var(--accent2); }
+  .tag.active { border-color: var(--accent); color: var(--accent); background: #1a0800; }
+
+  .btn-generate {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-generate:hover { background: #ff5520; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,60,0,0.35); }
+  .btn-generate:active { transform: translateY(0); }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .output-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    color: var(--accent2);
+  }
+  .btn-copy {
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    color: var(--label);
+    padding: 7px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-copy:hover { border-color: var(--green); color: var(--green); }
+  .btn-copy.copied { border-color: var(--green); color: var(--green); background: #001a0a; }
+
+  .output-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 200px;
+    color: #ccc;
+  }
+
+  .placeholder-text {
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+    padding: 60px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+  }
+
+  .char-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 4px;
+  }
+  .char-count.warn { color: var(--accent2); }
+  .char-count.over { color: var(--accent); }
+
+  /* Beat fields highlight banner */
+  .beat-banner {
+    padding: 8px 12px;
+    background: #0f0800;
+    border: 1px solid #2a1800;
+    border-radius: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--accent2);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DRAEDEX</h1>
+  <span>Description Generator</span>
+</header>
+
+<div class="app">
+
+  <!-- LEFT PANEL -->
+  <div class="panel panel-left" id="formPanel">
+
+    <!-- TRACK TYPE -->
+    <div class="section" id="sec-type">
+      <div class="section-header" onclick="toggleSection('sec-type')">
+        <div class="section-title"><div class="dot"></div>Track Type</div>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="section-body">
+        <div>
+          <label>Content Type</label>
+          <select id="trackType" onchange="onTrackTypeChange()">
+            <option value="original">Original Song</option>
+            <option value="remix" selected>Remix / Mashup</option>
+            <option value="slowed">Slowed & Reverb</option>
+            <option value="cover">Cover</option>
+            <option value="instrumental">Instrumental / Beat</option>
+            <option value="phonk">Phonk</option>
+            <option value="lofi">Lo-Fi Edit</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- SONG INFO -->
+    <div class="section" id="sec-song">
+      <div class="section-header" onclick="toggleSection('sec-song')">
+        <div class="section-title"><div class="dot"></div>Song Info</div>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="section-body">
+        <div>
+          <label id="songNameLabel">Song Name *</label>
+          <input type="text" id="songName" placeholder="Dil Na Diya">
+        </div>
+        <div class="row" id="origArtistRow">
+          <div>
+            <label>Original Artist(s)</label>
+            <input type="text" id="origArtist" placeholder="Himesh Reshammiya">
+          </div>
+          <div>
+            <label>Your Artist Name *</label>
+            <input type="text" id="yourName" placeholder="DRAEDEX">
+          </div>
+        </div>
+        <!-- Only shown for non-beat types -->
+        <div class="row" id="genreYearRow">
+          <div>
+            <label>Genre / Vibe</label>
+            <input type="text" id="genre" placeholder="Phonk, EDM, Trap...">
+          </div>
+          <div>
+            <label>Year / Release</label>
+            <input type="text" id="year" placeholder="2025">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEAT SPECIFIC FIELDS (shown only for instrumental) -->
+    <div class="section" id="sec-beat" style="display:none">
+      <div class="section-header" onclick="toggleSection('sec-beat')">
+        <div class="section-title" style="color:var(--accent2)"><div class="dot" style="background:var(--accent2)"></div>Beat Info</div>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="beat-banner">🎹 These fields are specific to Instrumental / Beat descriptions</div>
+        <div class="row">
+          <div>
+            <label>License Type</label>
+            <select id="beatLicense">
+              <option value="FREE">FREE</option>
+              <option value="PAID">PAID</option>
+              <option value="LEASE">LEASE</option>
+              <option value="EXCLUSIVE">EXCLUSIVE</option>
+            </select>
+          </div>
+          <div>
+            <label>Beat Style / Type</label>
+            <input type="text" id="beatStyle" placeholder="Assamese Type Beat">
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Key</label>
+            <input type="text" id="beatKey" placeholder="F major">
+          </div>
+          <div>
+            <label>BPM</label>
+            <input type="text" id="beatBpm" placeholder="142">
+          </div>
+        </div>
+        <div>
+          <label>Beat Name / Title *</label>
+          <input type="text" id="beatName" placeholder="Rodali">
+        </div>
+        <div>
+          <label>Mood / Vibe Tags</label>
+          <input type="text" id="beatMood" placeholder="Dark, Cinematic, Emotional...">
+        </div>
+        <div>
+          <label>Usage Terms (optional)</label>
+          <textarea id="beatTerms" rows="3" placeholder="Free for non-commercial use with credit. Contact for commercial licensing..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT THE SONG (optional) -->
+    <div class="section" id="sec-about">
+      <div class="section-header" onclick="toggleSection('sec-about')">
+        <div class="section-title"><div class="dot"></div>About the Song</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="opt-label" style="font-size:0.65rem;">Include</span>
+          <label class="switch" onclick="event.stopPropagation()">
+            <input type="checkbox" id="toggleAbout" onchange="toggleOptional('aboutBody', this)">
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-icon">▾</span>
+        </div>
+      </div>
+      <div class="section-body" id="aboutBody" style="display:none">
+        <div>
+          <label>About / Description</label>
+          <textarea id="aboutText" rows="4" placeholder="Write a short story or context about this track..." oninput="countChars(this,'aboutCount',500)"></textarea>
+          <div class="char-count" id="aboutCount">0 / 500</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LYRICS (optional) -->
+    <div class="section" id="sec-lyrics">
+      <div class="section-header" onclick="toggleSection('sec-lyrics')">
+        <div class="section-title"><div class="dot"></div>Lyrics</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="opt-label" style="font-size:0.65rem;">Include</span>
+          <label class="switch" onclick="event.stopPropagation()">
+            <input type="checkbox" id="toggleLyrics" onchange="toggleOptional('lyricsBody', this)">
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-icon">▾</span>
+        </div>
+      </div>
+      <div class="section-body" id="lyricsBody" style="display:none">
+        <div>
+          <label>Paste Lyrics</label>
+          <textarea id="lyricsText" rows="6" placeholder="Paste your lyrics here...&#10;&#10;[Verse 1]&#10;..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- YOUR SOCIALS (hardcoded) -->
+    <div class="section" id="sec-socials">
+      <div class="section-header" onclick="toggleSection('sec-socials')">
+        <div class="section-title"><div class="dot"></div>Your Socials</div>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="section-body">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:5px">
+            <span style="font-size:1rem">📸</span>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--label);letter-spacing:1px;margin-bottom:2px">INSTAGRAM</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--accent)">https://www.instagram.com/_draedex_</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:5px">
+            <span style="font-size:1rem">🎵</span>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--label);letter-spacing:1px;margin-bottom:2px">SPOTIFY</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--accent)">https://open.spotify.com/artist/084SSUO6WXjg0yEy5eGCsd</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:5px">
+            <span style="font-size:1rem">▶️</span>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--label);letter-spacing:1px;margin-bottom:2px">YOUTUBE</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--accent)">https://www.youtube.com/@draedex</div>
+            </div>
+          </div>
+        </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:5px">
+            <span style="font-size:1rem">📩</span>
+            <div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--label);letter-spacing:1px;margin-bottom:2px">BUSINESS EMAIL</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--accent)">draedexmusic@gmail.com</div>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- FEATURING & COLLAB (hidden for beat type) -->
+    <div class="section" id="sec-collabs">
+      <div class="section-header" onclick="toggleSection('sec-collabs')">
+        <div class="section-title"><div class="dot"></div>Featuring &amp; Collab Artists</div>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="section-body">
+        <div id="featList" class="artist-list"></div>
+        <button class="btn-add" onclick="addArtist('feat')">+ Add Featuring / Collab Artist</button>
+      </div>
+    </div>
+
+    <!-- OTHER CREDITS -->
+    <div class="section" id="sec-credits">
+      <div class="section-header" onclick="toggleSection('sec-credits')">
+        <div class="section-title"><div class="dot"></div>Other Credits</div>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="section-body">
+        <div id="creditList" class="artist-list"></div>
+        <button class="btn-add" onclick="addArtist('credit')">+ Add Role (Video, Mix, Master...)</button>
+      </div>
+    </div>
+
+    <!-- DISCLAIMER (auto for remix/cover/etc.) -->
+    <div class="section" id="sec-disclaimer" style="display:none">
+      <div class="section-header">
+        <div class="section-title" style="color:#ff9500"><div class="dot" style="background:var(--accent2)"></div>Disclaimer</div>
+        <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted)">AUTO</span>
+      </div>
+      <div class="section-body">
+        <div style="padding:10px 12px;background:#0f0a00;border:1px solid #2a1800;border-radius:5px;font-family:'DM Mono',monospace;font-size:0.72rem;color:#888;line-height:1.7">
+          This audio/video is strictly meant for promotional purposes. No commercial use is intended. The original copyright(s) are solely owned by the original artist(s) / record label(s). All content is intended to showcase the creativity of the artist involved and is strictly done for promotional purposes.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAGS -->
+    <div class="section" id="sec-tags">
+      <div class="section-header" onclick="toggleSection('sec-tags')">
+        <div class="section-title"><div class="dot"></div>Tags / Hashtags</div>
+        <span class="toggle-icon">▾</span>
+      </div>
+      <div class="section-body">
+        <label>Quick Tags (click to toggle)</label>
+        <div class="tag-grid" id="quickTags"></div>
+        <div style="margin-top:10px">
+          <label>Custom Tags (comma separated)</label>
+          <input type="text" id="customTags" placeholder="#viralmusic, #newrelease, #draedex">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generate" onclick="generate()">⚡ GENERATE DESCRIPTION</button>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel panel-right">
+    <div class="output-header">
+      <div class="output-title">OUTPUT</div>
+      <button class="btn-copy" id="copyBtn" onclick="copyOutput()">
+        <span>⎘</span> <span id="copyLabel">COPY ALL</span>
+      </button>
+    </div>
+    <div class="output-box" id="outputBox">
+      <div class="placeholder-text">
+        Fill in the fields on the left and hit<br><strong>⚡ GENERATE DESCRIPTION</strong>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);display:flex;gap:20px;flex-wrap:wrap">
+      <span id="totalChars">0 chars</span>
+      <span id="totalLines">0 lines</span>
+      <span style="color:#333">YT description limit ≈ 5000 chars</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// QUICK TAG PRESETS
+const TAG_PRESETS_DEFAULT = [
+  "#remix","#mashup","#originalmusic","#phonk","#slowedandreverb",
+  "#edm","#trap","#nightdrive","#gamingmusic","#bassboosted",
+  "#viralmusic","#electronicmusic","#producer","#newmusic","#hiphop",
+  "#lofi","#workout","#cinematic","#trending","#viral"
+];
+
+const TAG_PRESETS_BEAT = [
+  "#typebeat","#freebeat","#instrumentals","#beatmaker","#producer",
+  "#hiphopbeat","#rapbeat","#trapbeat","#lofibeat","#samplebeat",
+  "#freedownload","#beatsforsale","#newbeat","#hiphop","#trap",
+  "#cinematic","#darkbeat","#boombap","#trending","#viral"
+];
+
+const activeTags = new Set();
+
+function buildTagGrid(isBeat) {
+  const g = document.getElementById('quickTags');
+  g.innerHTML = '';
+  activeTags.clear();
+  const presets = isBeat ? TAG_PRESETS_BEAT : TAG_PRESETS_DEFAULT;
+  presets.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'tag';
+    el.textContent = t;
+    el.onclick = () => {
+      el.classList.toggle('active');
+      activeTags.has(t) ? activeTags.delete(t) : activeTags.add(t);
+    };
+    g.appendChild(el);
+  });
+}
+buildTagGrid(false);
+
+// SECTION COLLAPSE
+function toggleSection(id){
+  const s = document.getElementById(id);
+  s.classList.toggle('collapsed');
+}
+
+// OPTIONAL SECTIONS
+function toggleOptional(bodyId, checkbox){
+  const body = document.getElementById(bodyId);
+  body.style.display = checkbox.checked ? 'flex' : 'none';
+}
+
+// TRACK TYPE CHANGE
+function onTrackTypeChange(){
+  const v = document.getElementById('trackType').value;
+  const isBeat = v === 'instrumental';
+  const needsDisclaimer = ['remix','slowed','cover','phonk','lofi'].includes(v);
+
+  // Show/hide beat-specific section
+  document.getElementById('sec-beat').style.display = isBeat ? 'block' : 'none';
+
+  // Show/hide disclaimer
+  document.getElementById('sec-disclaimer').style.display = needsDisclaimer ? 'block' : 'none';
+
+  // Show/hide orig artist row (beats don't need it)
+  document.getElementById('origArtistRow').style.display = isBeat ? 'none' : 'grid';
+
+  // Show/hide genre/year row (beats use beat-specific fields instead)
+  document.getElementById('genreYearRow').style.display = isBeat ? 'none' : 'grid';
+
+  // Show/hide lyrics section (beats rarely have lyrics)
+  document.getElementById('sec-lyrics').style.display = isBeat ? 'none' : 'block';
+
+  // Show/hide collabs (less relevant for beats, but keep visible)
+  document.getElementById('sec-collabs').style.display = isBeat ? 'none' : 'block';
+
+  // Update song name label and placeholder
+  const songNameLabel = document.getElementById('songNameLabel');
+  const songNameInput = document.getElementById('songName');
+  if (isBeat) {
+    songNameLabel.textContent = 'Your Artist Name *';
+    songNameInput.placeholder = 'DRAEDEX';
+  } else {
+    songNameLabel.textContent = 'Song Name *';
+    songNameInput.placeholder = 'Dil Na Diya';
+  }
+
+  // Rebuild tag grid for context
+  buildTagGrid(isBeat);
+}
+onTrackTypeChange(); // init
+
+// ARTIST ENTRIES
+let featCount = 0, creditCount = 0;
+
+function addArtist(type){
+  if(type === 'feat'){
+    featCount++;
+    const id = 'feat_' + featCount;
+    const div = document.createElement('div');
+    div.className = 'artist-entry';
+    div.id = id;
+    div.innerHTML = `
+      <input type="text" placeholder="Artist Name" class="feat-name">
+      <input type="url" placeholder="https://instagram.com/..." class="feat-link">
+      <button class="btn-remove" onclick="document.getElementById('${id}').remove()">×</button>`;
+    document.getElementById('featList').appendChild(div);
+  } else {
+    creditCount++;
+    const id = 'credit_' + creditCount;
+    const div = document.createElement('div');
+    div.className = 'artist-entry';
+    div.id = id;
+    div.innerHTML = `
+      <input type="text" placeholder="Role (e.g. Video By)" class="credit-role">
+      <input type="text" placeholder="Name / @handle" class="credit-name">
+      <button class="btn-remove" onclick="document.getElementById('${id}').remove()">×</button>`;
+    document.getElementById('creditList').appendChild(div);
+  }
+}
+
+// CHAR COUNTER
+function countChars(el, countId, max){
+  const n = el.value.length;
+  const c = document.getElementById(countId);
+  c.textContent = n + ' / ' + max;
+  c.className = 'char-count' + (n > max ? ' over' : n > max*0.85 ? ' warn' : '');
+}
+
+const vv = id => document.getElementById(id)?.value?.trim() ?? '';
+const $ = id => document.getElementById(id);
+
+// GENERATE
+function generate(){
+  const type = vv('trackType');
+
+  if(type === 'instrumental'){
+    generateBeat();
+    return;
+  }
+
+  // ── ORIGINAL / REMIX / etc. logic (unchanged from original) ──
+  const songName = vv('songName');
+  const origArt  = vv('origArtist');
+  const myName   = vv('yourName');
+  const genre    = vv('genre');
+  const year     = vv('year');
+
+  const aboutOn    = $('toggleAbout').checked;
+  const aboutText  = vv('aboutText');
+  const lyricsOn   = $('toggleLyrics').checked;
+  const lyricsText = vv('lyricsText');
+
+  const typeLabels = {
+    original:'Original Song', remix:'Remix', slowed:'Slowed & Reverb',
+    cover:'Cover', instrumental:'Instrumental / Beat', phonk:'Phonk Remix', lofi:'Lo-Fi Edit'
+  };
+  const typeLabel = typeLabels[type] || 'Track';
+  const needsDisclaimer = ['remix','slowed','cover','phonk','lofi'].includes(type);
+
+  if(!songName){ alert('Please enter the Song Name!'); return; }
+  if(!myName)  { alert('Please enter your Artist Name!'); return; }
+
+  const lines = [];
+
+  lines.push(`🎵 ${songName.toUpperCase()}${origArt ? ' - ' + origArt : ''} | ${typeLabel.toUpperCase()} | ${myName.toUpperCase()}`);
+  lines.push('');
+
+  if(aboutOn && aboutText){
+    lines.push('🔥 ABOUT THIS TRACK');
+    lines.push(aboutText);
+    lines.push('');
+  }
+
+  lines.push('🎧 ARTISTS & CREDITS');
+  lines.push('');
+  lines.push(`Song: ${songName}${origArt ? ' — ' + origArt : ''}`);
+
+  const roleMap = {
+    remix:'Remix By', slowed:'Edit By', cover:'Cover By',
+    instrumental:'Produced By', phonk:'Phonk Remix By', lofi:'Lo-Fi Edit By', original:'Artist'
+  };
+  lines.push(`${roleMap[type] || 'By'}: ${myName}`);
+
+  const featEntries = document.querySelectorAll('.feat-name');
+  featEntries.forEach((el) => {
+    if(el.value.trim()) lines.push(`Feat. / Collab: ${el.value.trim()}`);
+  });
+
+  const creditRoles = document.querySelectorAll('.credit-role');
+  const creditNames = document.querySelectorAll('.credit-name');
+  creditRoles.forEach((el, i) => {
+    const r = el.value.trim();
+    const n = creditNames[i]?.value?.trim();
+    if(r && n) lines.push(`${r}: ${n}`);
+    else if(n) lines.push(`Credit: ${n}`);
+  });
+
+  if(genre) lines.push(`Genre: ${genre}`);
+  if(year)  lines.push(`Year: ${year}`);
+  lines.push('');
+
+  lines.push('📲 FOLLOW ME');
+  lines.push('🔗 Instagram: https://www.instagram.com/_draedex_');
+  lines.push('🔗 Spotify: https://open.spotify.com/artist/084SSUO6WXjg0yEy5eGCsd');
+  lines.push('🔗 YouTube: https://www.youtube.com/@draedex');
+  lines.push('');
+
+  const featNameEls = document.querySelectorAll('.feat-name');
+  const featLinkEls = document.querySelectorAll('.feat-link');
+  const featSocials = [];
+  featNameEls.forEach((el,i) => {
+    const name = el.value.trim();
+    const link = featLinkEls[i]?.value?.trim();
+    if(name && link) featSocials.push(`🔗 Follow ${name}: ${link}`);
+  });
+  if(featSocials.length){
+    lines.push('🤝 FOLLOW THE ARTISTS');
+    lines.push('');
+    featSocials.forEach(l => lines.push(l));
+    lines.push('');
+  }
+
+  if(lyricsOn && lyricsText){
+    lines.push('📝 LYRICS');
+    lines.push('');
+    lines.push(lyricsText);
+    lines.push('');
+  }
+
+  if(needsDisclaimer){
+    lines.push('⚠️ DISCLAIMER');
+    lines.push(`This audio/video is strictly meant for promotional purposes. No commercial use is intended. The original copyright(s) are solely owned by the original artist(s) / record label(s). All content is intended to showcase the creativity of the artist involved and is strictly done for promotional purposes.`);
+    lines.push('');
+  }
+
+  const selectedTags = [...activeTags];
+  const customTagsRaw = vv('customTags');
+  const customTagArr  = customTagsRaw ? customTagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const allTags = [...selectedTags, ...customTagArr];
+
+  const autoTagMap = {
+    remix: ['#remix','#mashup'],
+    slowed: ['#slowedandreverb','#slowedreverb'],
+    phonk: ['#phonk','#phonkremix'],
+    lofi: ['#lofi','#lofichill'],
+    cover: ['#coverversion'],
+  };
+  if(autoTagMap[type]) {
+    autoTagMap[type].forEach(t => { if(!allTags.includes(t)) allTags.unshift(t); });
+  }
+
+  if(songName) allTags.push('#' + songName.toLowerCase().replace(/\s+/g,''));
+  if(myName)   allTags.push('#' + myName.toLowerCase().replace(/\s+/g,''));
+
+  if(allTags.length){
+    lines.push('✨ TAGS');
+    lines.push(allTags.join(' '));
+    lines.push('');
+  }
+
+  lines.push('📩 CONTACT / BUSINESS');
+  lines.push('Email: draedexmusic@gmail.com');
+  lines.push('');
+
+  lines.push('❤ SUPPORT THE CHANNEL');
+  lines.push('');
+  lines.push('👍 Like   💬 Comment   🔔 Subscribe   📤 Share');
+  lines.push('');
+  lines.push('Thanks for listening 🎶');
+
+  const output = lines.join('\n');
+  $('outputBox').textContent = output;
+  $('outputBox').style.color = '#ccc';
+
+  $('totalChars').textContent = output.length + ' chars';
+  $('totalChars').style.color = output.length > 5000 ? 'var(--accent)' : 'var(--muted)';
+  $('totalLines').textContent = lines.length + ' lines';
+}
+
+// ── BEAT GENERATION ──
+function generateBeat(){
+  const artistName  = vv('songName'); // repurposed field
+  const beatName    = vv('beatName');
+  const beatStyle   = vv('beatStyle');
+  const beatKey     = vv('beatKey');
+  const beatBpm     = vv('beatBpm');
+  const beatTerms   = vv('beatTerms');
+  const license     = vv('beatLicense') || 'FREE';
+
+  const aboutOn    = $('toggleAbout').checked;
+  const aboutText  = vv('aboutText');
+
+  const myName = artistName || 'DRAEDEX';
+
+  if(!beatName){ alert('Please enter the Beat Name / Title!'); return; }
+
+  const lines = [];
+
+  // Build the full beat title, e.g. [FREE] ASSAMESE TYPE BEAT ~ "RODALI"
+  const styleStr = beatStyle ? beatStyle.toUpperCase() : 'TYPE BEAT';
+  const fullTitle = `[${license}] ${styleStr} ~ "${beatName.toUpperCase()}"`;
+
+  lines.push(`🎵 ${fullTitle} | INSTRUMENTAL / BEAT | ${myName.toUpperCase()}`);
+  lines.push('');
+
+  // About section (optional)
+  if(aboutOn && aboutText){
+    lines.push('🔥 ABOUT THIS BEAT');
+    lines.push(aboutText);
+    lines.push('');
+  }
+
+  // Credits block
+  lines.push(`Song: ${fullTitle}`);
+  lines.push(`Produced By: ${myName}`);
+
+  if(beatKey) lines.push(`Key: ${beatKey}`);
+  if(beatBpm) lines.push(`BPM: ${beatBpm} bpm`);
+  lines.push('');
+
+  // Usage terms
+  if(beatTerms){
+    lines.push('📋 USAGE / LICENSING');
+    lines.push(beatTerms);
+    lines.push('');
+  } else if(license === 'FREE') {
+    lines.push('📋 USAGE');
+    lines.push('Free for non-commercial use. Credit required in title/description.');
+    lines.push('Contact for commercial licensing.');
+    lines.push('');
+  }
+
+  // Other credits
+  const creditRoles = document.querySelectorAll('.credit-role');
+  const creditNames = document.querySelectorAll('.credit-name');
+  const hasCredits = Array.from(creditRoles).some(el => el.value.trim());
+  if(hasCredits){
+    lines.push('🎛 ADDITIONAL CREDITS');
+    creditRoles.forEach((el, i) => {
+      const r = el.value.trim();
+      const n = creditNames[i]?.value?.trim();
+      if(r && n) lines.push(`${r}: ${n}`);
+      else if(n) lines.push(`Credit: ${n}`);
+    });
+    lines.push('');
+  }
+
+  // Socials
+  lines.push('📲 FOLLOW ME');
+  lines.push('Instagram: https://www.instagram.com/_draedex_');
+  lines.push('Spotify: https://open.spotify.com/artist/084SSUO6WXjg0yEy5eGCsd');
+  lines.push('YouTube: https://www.youtube.com/@draedex');
+  lines.push('');
+
+  // Tags
+  const selectedTags = [...activeTags];
+  const customTagsRaw = vv('customTags');
+  const customTagArr  = customTagsRaw ? customTagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const allTags = [...selectedTags, ...customTagArr];
+
+  // Auto tags for beats
+  const autoTags = ['#beatmaker','#instrumental'];
+  autoTags.forEach(t => { if(!allTags.includes(t)) allTags.unshift(t); });
+
+  // Add beat-style as tag
+  if(beatStyle){
+    const styleTag = '#' + beatStyle.toLowerCase().replace(/\s+/g,'');
+    if(!allTags.includes(styleTag)) allTags.push(styleTag);
+  }
+  if(beatName){
+    const nameTag = '#' + beatName.toLowerCase().replace(/\s+/g,'');
+    if(!allTags.includes(nameTag)) allTags.push(nameTag);
+  }
+  allTags.push('#' + myName.toLowerCase().replace(/\s+/g,''));
+
+  if(allTags.length){
+    lines.push('✨ TAGS');
+    lines.push(allTags.join(' '));
+    lines.push('');
+  }
+
+  // Business
+  lines.push('📩 CONTACT / BUSINESS');
+  lines.push('Email: draedexmusic@gmail.com');
+  lines.push('');
+
+  // Support
+  lines.push('❤ SUPPORT THE CHANNEL');
+  lines.push('');
+  lines.push('👍 Like   💬 Comment   🔔 Subscribe   📤 Share');
+  lines.push('');
+  lines.push('Thanks for listening 🎶');
+
+  const output = lines.join('\n');
+  $('outputBox').textContent = output;
+  $('outputBox').style.color = '#ccc';
+
+  $('totalChars').textContent = output.length + ' chars';
+  $('totalChars').style.color = output.length > 5000 ? 'var(--accent)' : 'var(--muted)';
+  $('totalLines').textContent = lines.length + ' lines';
+}
+
+// COPY
+function copyOutput(){
+  const text = $('outputBox').textContent;
+  if(!text || text.includes('Fill in the fields')) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = $('copyBtn');
+    $('copyLabel').textContent = 'COPIED!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      $('copyLabel').textContent = 'COPY ALL';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
